@@ -1,0 +1,55 @@
+service: aws-es-reto
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  profile: demo
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+functions:
+  create:
+    handler: perfil/crear.crear
+    events:
+      - http:
+          path: perfil
+          method: post
+          cors: true
+
+  list:
+    handler: perfil/lista.lista
+    events:
+      - http:
+          path: perfil
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    AwsEsRetoDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: emailcert
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: emailcert
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
