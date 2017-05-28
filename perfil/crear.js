@@ -88,12 +88,26 @@ module.exports.crear = (event, context, callback) => {
             return;
         }
 
+        var responseBody = JSON.stringify(params.Item);
+        
+        var sns = new AWS.SNS();
+        sns.publish({
+          Message: responseBody,
+          TopicArn: process.env.SNS_TOPIC
+        }, function(err, data) {
+          if (err) {
+            console.log(err.stack);
+          }
+
+          const response = {
+              statusCode: 200,
+              body: responseBody,
+          };
+          callback(null, response);
+        });
+
         // create a response
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify(params.Item),
-        };
-        callback(null, response);
+        
     });
   });  
 };

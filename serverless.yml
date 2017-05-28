@@ -8,6 +8,7 @@ provider:
   profile: demo
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    SNS_TOPIC: arn:aws:sns:us-east-1:510418854174:aws-es-reto
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -18,6 +19,10 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: "${self:provider.environment.SNS_TOPIC}"
 
 functions:
   create:
